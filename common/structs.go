@@ -111,8 +111,8 @@ type Position struct {
 
 type SolarSystem struct {
 	gorm.Model     `json:"-"`
-	ID             uint    `solar_systemd_id:"-"`
+	ID             uint    `json:"solar_system_id:"`
 	RegionID       uint    `json:"region_id:"`
 	SecurityStatus float64 `json:"security_status"`
-	Name           string  `json:"-"`
+	Name           string  `json:"name"`
 }
