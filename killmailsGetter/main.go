@@ -34,7 +34,7 @@ func main() {
 			panic(err)
 		}
 		for _, token := range *tokens {
-			mappings, err := getInitialMapping(db)
+			mappings, err := common.GetMappings(db)
 			fmt.Printf("Found %d mappings\n", len(mappings))
 			if err != nil {
 				panic(err)
@@ -103,16 +103,6 @@ func main() {
 		fmt.Printf("All tokens done. Sleeping for %d minutes.\n", 60)
 		time.Sleep(60 * time.Minute)
 	}
-}
-
-func getInitialMapping(db *gorm.DB) (map[uint]string, error) {
-	res := make(map[uint]string)
-	mappings := []common.Mapping{}
-	db.Find(&mappings)
-	for _, mapping := range mappings {
-		res[mapping.ID] = mapping.Name
-	}
-	return res, nil
 }
 
 func getKillmailIDsWithToken(token common.Token) ([]common.Killmail, error) {
