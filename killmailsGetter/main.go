@@ -45,17 +45,10 @@ func main() {
 			existingKmIds := getExistingKmIds(&existingKms)
 			fmt.Printf("Found %d Killmails\n", len(existingKmIds))
 			fmt.Printf("Retrieving KM IDs for token: %d\n", token.ID)
-			if int64(token.Exp) < time.Now().Unix() {
-				err := common.RefreshToken(&token, ClientId, SecretKey)
-				if err != nil {
-					fmt.Println("Error while refreshing token:", err)
-					continue
-				}
-				db.Save(&token)
-			}
-			newKms, err := getKillmailIDsWithToken(token)
+			newKms, err := getKillmailIDsWithToken(db, token)
 			if err != nil {
 				fmt.Println("Error while retrieving KM IDs:", err)
+				continue
 			}
 			filteredKms := []common.Killmail{}
 			for _, km := range newKms {
@@ -105,7 +98,7 @@ func main() {
 	}
 }
 
-func getKillmailIDsWithToken(token common.Token) ([]common.Killmail, error) {
+func getKillmailIDsWithToken(db *gorm.DB, token common.Token) ([]common.Killmail, error) {
 	res := []common.Killmail{}
 	var url string
 	if token.CorpID != 0 {
@@ -124,6 +117,14 @@ func getKillmailIDsWithToken(token common.Token) ([]common.Killmail, error) {
 			return []common.Killmail{}, err
 		}
 		return res, nil
+	}
+	if int64(token.Exp) < time.Now().Unix() {
+		err := common.RefreshToken(&token, ClientId, SecretKey)
+		if err != nil {
+			fmt.Println("Error while refreshing token:", err)
+			return nil, err
+		}
+		db.Save(&token)
 	}
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Add("Authorization", "Bearer "+token.AccessToken)
