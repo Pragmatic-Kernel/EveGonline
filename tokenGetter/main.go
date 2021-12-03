@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/Pragmatic-Kernel/EveGoNline/common"
-	"github.com/square/go-jose"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -21,33 +20,6 @@ import (
 var ClientId string
 var SecretKey string
 var CallbackUri string
-
-func getTokenPayload(tokenString string) (common.Payload, error) {
-	object, err := jose.ParseSigned(tokenString)
-	if err != nil {
-		fmt.Println("ERROR Parse:", err)
-		return common.Payload{}, err
-	}
-	var d jose.JSONWebKey
-	fmt.Println(string(common.JWK))
-	if err := json.Unmarshal([]byte(common.JWK), &d); err != nil {
-		fmt.Println("ERROR Umarshal Jose:", err)
-		return common.Payload{}, err
-	}
-	fmt.Println(d.Valid())
-	output, err := object.Verify(d)
-	if err != nil {
-		fmt.Println("ERROR Verify Jose:", err)
-		return common.Payload{}, err
-	}
-	fmt.Println("OUTPUT: ", string(output))
-	var payload common.Payload
-	if err := json.Unmarshal([]byte(output), &payload); err != nil {
-		fmt.Println("ERROR Umarshal Token:", err)
-		return common.Payload{}, err
-	}
-	return payload, nil
-}
 
 func getCharID(charID string) (uint, error) {
 	segments := strings.Split(charID, ":")
@@ -124,7 +96,7 @@ func main() {
 		}
 		fmt.Println(pretoken.AccessToken)
 		fmt.Println(pretoken.RefreshToken)
-		payload, err := getTokenPayload(pretoken.AccessToken)
+		payload, err := common.GetTokenPayload(pretoken.AccessToken)
 		if err != nil {
 			fmt.Println("ERROR:", err)
 			return
