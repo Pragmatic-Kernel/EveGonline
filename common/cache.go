@@ -1,4 +1,4 @@
-package main
+package common
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func setCache(url string, body []byte) ([]byte, error) {
+func SetCache(url string, body []byte) ([]byte, error) {
 	url = strings.TrimPrefix(url, "https://")
 	url = strings.ReplaceAll(url, "/", "_")
 	file, err := os.Create(filepath.Join("cache", url))
@@ -29,7 +29,27 @@ func setCache(url string, body []byte) ([]byte, error) {
 	return body, nil
 }
 
-func getCache(url string, maxage int) ([]byte, error) {
+func MoveCacheFile(url string) error {
+	url = strings.TrimPrefix(url, "https://")
+	url = strings.ReplaceAll(url, "/", "_")
+	file, err := os.Open(filepath.Join("cache", url))
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Moving.\n")
+	currentTimefmt := time.Now().Format("_2006-01-02_15_04")
+	e := os.Rename(file.Name(), file.Name()+currentTimefmt)
+	if e != nil {
+		return fmt.Errorf("error while renaming cache file: %w", err)
+	}
+	err = file.Close()
+	if err != nil {
+		return fmt.Errorf("unable to close cache file: %w", err)
+	}
+	return nil
+}
+
+func GetCache(url string, maxage int) ([]byte, error) {
 	// if maxage = 0; no expiry
 	url = strings.TrimPrefix(url, "https://")
 	url = strings.ReplaceAll(url, "/", "_")
@@ -44,15 +64,9 @@ func getCache(url string, maxage int) ([]byte, error) {
 			return nil, fmt.Errorf("error while checking age for cache file: %w", err)
 		}
 		if fileAge > maxage {
-			fmt.Printf("File cache too old, moving.\n")
-			currentTimefmt := time.Now().Format("_2006-01-02_15_04")
-			e := os.Rename(file.Name(), file.Name()+currentTimefmt)
-			if e != nil {
-				return nil, fmt.Errorf("error while renaming cache file: %w", err)
-			}
-			err = file.Close()
+			err := MoveCacheFile(url)
 			if err != nil {
-				return nil, fmt.Errorf("unable to close cache file: %w", err)
+				return nil, fmt.Errorf("unable to move cache file: %w", err)
 			}
 			return nil, nil
 		}
