@@ -36,6 +36,8 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Cannot get image from cache"))
 	}
 	if payload != nil {
+		w.Header().Add("Cache-Control", "max-age=7200")
+		w.WriteHeader(http.StatusOK)
 		w.Write(payload)
 		return
 	}
@@ -66,6 +68,8 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Cannot get image from ESI"))
 		return
 	}
+	w.Header().Add("Cache-Control", "max-age=7200")
+	w.WriteHeader(http.StatusOK)
 	w.Write(payload)
 }
 
@@ -110,7 +114,7 @@ func buildImageURL(imageType string, imageId uint, size uint) (string, error) {
 	case "characters":
 		return imageType + "/" + fmt.Sprintf("%d", imageId) + "/portrait?size=" + fmt.Sprintf("%d", size), nil
 	case "types":
-		return imageType + "/" + fmt.Sprintf("%d", imageId) + "/icon", nil
+		return fmt.Sprintf("%d", imageId) + "_" + fmt.Sprintf("%d", size) + ".png", nil
 	}
 	return "", fmt.Errorf("unable to build URL for type: %s and id: %d", imageType, imageId)
 }
@@ -140,7 +144,7 @@ func getSizeFromUrl(url url.URL) (uint, error) {
 	if err != nil {
 		return 0, fmt.Errorf("invalid size parameter, invalid uint")
 	}
-	if size != 64 && size != 128 && size != 256 && size != 512 {
+	if size != 32 && size != 64 && size != 128 && size != 256 && size != 512 {
 		return 0, fmt.Errorf("invalid size parameter, invalid size: %d", size)
 	}
 	return uint(size), nil
