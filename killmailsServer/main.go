@@ -103,6 +103,9 @@ func main() {
 	mux.HandleFunc("/killmail/", func(w http.ResponseWriter, r *http.Request) {
 		getKM(db, w, r)
 	})
+	mux.HandleFunc("/images/", func(w http.ResponseWriter, r *http.Request) {
+		getImage(db, w, r)
+	})
 	s := &http.Server{
 		Addr:    ":8000",
 		Handler: mux,

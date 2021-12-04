@@ -8,3 +8,5 @@ const EveApiKillmailCharAPIUrl = "https://esi.evetech.net/latest/characters/%d/k
 const EveApiKillmailCorpAPIUrl = "https://esi.evetech.net/latest/corporations/%d/killmails/recent"
 const EveApiKillmailDetailsAPIUrl = "https://esi.evetech.net/latest/killmails/%d/%s/"
 const EveApiNamesAPIUrl = "https://esi.evetech.net/latest/universe/names/"
+
+const EveImagesUrl = "https://images.evetech.net/"
