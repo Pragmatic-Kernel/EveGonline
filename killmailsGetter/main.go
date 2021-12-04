@@ -21,8 +21,11 @@ var SecretKey string
 func main() {
 	ClientId = os.Getenv("CLIENT_ID")
 	SecretKey = os.Getenv("SECRET_KEY")
+	if ClientId == "" || SecretKey == "" {
+		panic("Missing CLIENT_ID or SECRET_KEY env variable")
+	}
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	db.AutoMigrate(&common.Mapping{}, &common.Token{}, &common.Killmail{}, &common.Attacker{}, &common.Victim{}, &common.Item{}, &common.SubItem{}, &common.Position{}, &common.SolarSystem{})
+	db.AutoMigrate(&common.Mapping{}, &common.Token{}, &common.Killmail{}, &common.Attacker{}, &common.Victim{}, &common.Item{}, &common.SubItem{}, &common.Position{}, &common.SolarSystem{}, &common.Asset{})
 	db.Exec("PRAGMA foreign_keys = ON")
 	if err != nil {
 		panic(err)
@@ -108,7 +111,7 @@ func getKillmailIDsWithToken(db *gorm.DB, token common.Token) ([]common.Killmail
 		url := fmt.Sprintf(common.EveApiKillmailCharAPIUrl, token.CharID)
 		fmt.Println(url)
 	}
-	body, err := common.GetCache(url, 86400)
+	body, err := common.GetCache(url, 86400, true)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching cache: %w", err)
 	}
@@ -166,7 +169,7 @@ func getKillmailDetails(km *common.Killmail) error {
 	id := km.ID
 	hash := km.Hash
 	url := fmt.Sprintf(common.EveApiKillmailDetailsAPIUrl, id, hash)
-	body, err := common.GetCache(url, 0)
+	body, err := common.GetCache(url, 0, false)
 	if err != nil {
 		return fmt.Errorf("error fetching cache: %w", err)
 	}

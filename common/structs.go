@@ -116,3 +116,9 @@ type SolarSystem struct {
 	SecurityStatus float64 `json:"security_status"`
 	Name           string  `json:"name"`
 }
+
+type Asset struct {
+	gorm.Model
+	Etag string
+	Size uint
+}
