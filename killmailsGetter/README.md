@@ -1,4 +1,4 @@
-# EveGetKillmails
+# KillmailsGetter
 
 ## Solar Systems Table
 
