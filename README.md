@@ -32,3 +32,11 @@ UPDATE mappings SET deleted_at = NULL;
 
 All renders should be in the static export (render), matching on ship type ID.
 All items should be in the static export (types), matching on item type ID, with two sizes, 32 and 64 px.
+
+## Tokens Table
+
+```sql
+CREATE TABLE IF NOT EXISTS "tokens" (`id` integer,`created_at` datetime,`updated_at` datetime,`deleted_at` datetime,`access_token` text,`refresh_token` text,`char_id` integer, `exp` integer, `corp_
+id` integer,PRIMARY KEY (`id`));
+CREATE INDEX `idx_tokens_deleted_at` ON `tokens`(`deleted_at`);
+```
