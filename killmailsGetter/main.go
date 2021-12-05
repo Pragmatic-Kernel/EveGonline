@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Pragmatic-Kernel/EveGoNline/common"
+	"github.com/Pragmatic-Kernel/EveGonline/common"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Pragmatic-Kernel/EveGoNline/common"
+	"github.com/Pragmatic-Kernel/EveGonline/common"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

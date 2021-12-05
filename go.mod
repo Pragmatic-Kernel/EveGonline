@@ -1,4 +1,4 @@
-module github.com/Pragmatic-Kernel/EveGoNline
+module github.com/Pragmatic-Kernel/EveGonline
 
 go 1.17
 
