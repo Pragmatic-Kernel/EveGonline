@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+var ErrNotModified = errors.New("error not modified")
 
 func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	imageType := strings.Split(r.URL.Path, "/")[2]
@@ -50,23 +53,39 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	asset := common.Asset{}
 	db.Where("id = ? AND size = ?", imageId, size).First(&asset)
 	payload, etag, err := getImageFromEsi(url, asset.Etag)
-	asset.Etag = etag
-	asset.ID = imageId
-	asset.Size = size
-	db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"etag"}),
-	}).Create(&asset)
 	if err != nil {
-		fmt.Println(err)
-		w.Write([]byte("Cannot get image from ESI"))
-		return
-	}
-	payload, err = common.SetCache(url, imageType, payload)
-	if err != nil {
-		fmt.Println(err)
-		w.Write([]byte("Cannot set cache"))
-		return
+		if err == ErrNotModified {
+			err := common.TouchFile(url, imageType)
+			if err != nil {
+				fmt.Println(err)
+				w.Write([]byte("Cannot update cache"))
+				return
+			}
+			payload, err = common.GetCache(url, imageType, 0)
+			if err != nil {
+				fmt.Println(err)
+				w.Write([]byte("Cannot get cache post update"))
+				return
+			}
+		} else {
+			fmt.Println(err)
+			w.Write([]byte("Cannot get image from ESI"))
+			return
+		}
+	} else {
+		payload, err = common.SetCache(url, imageType, payload)
+		asset.Etag = etag
+		asset.ID = imageId
+		asset.Size = size
+		db.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}, {Name: "size"}},
+			DoUpdates: clause.AssignmentColumns([]string{"etag"}),
+		}).Create(&asset)
+		if err != nil {
+			fmt.Println(err)
+			w.Write([]byte("Cannot set cache"))
+			return
+		}
 	}
 	w.Header().Add("Cache-Control", "max-age=7200")
 	w.WriteHeader(http.StatusOK)
@@ -100,10 +119,16 @@ func getImageFromEsi(url string, etag string) ([]byte, string, error) {
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, "", fmt.Errorf("error requesting image: %w", err)
+		return nil, "", err
+	}
+	etag = resp.Header.Get("etag")
+	if resp.StatusCode == http.StatusNotModified {
+		return nil, etag, ErrNotModified
+	}
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, etag, errors.New("not found")
 	}
 	body, _ := io.ReadAll(resp.Body)
-	etag = resp.Header.Get("etag")
 	return body, etag, nil
 }
 

@@ -40,3 +40,10 @@ CREATE TABLE IF NOT EXISTS "tokens" (`id` integer,`created_at` datetime,`updated
 id` integer,PRIMARY KEY (`id`));
 CREATE INDEX `idx_tokens_deleted_at` ON `tokens`(`deleted_at`);
 ```
+
+## Assets table
+
+```sql
+CREATE TABLE IF NOT EXISTS "assets" (`id` integer,`created_at` datetime,`updated_at` datetime,`deleted_at` datetime,`etag` text, `size` integer,PRIMARY KEY (`id`, `size`));
+CREATE INDEX `idx_assets_deleted_at` ON "assets"(`deleted_at`);
+```

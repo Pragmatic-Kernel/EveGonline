@@ -13,6 +13,20 @@ import (
 
 var ErrCacheExpired = errors.New("cache too old")
 
+func TouchFile(url string, directory string) error {
+	url = strings.TrimPrefix(url, "https://")
+	url = strings.ReplaceAll(url, "/", "_")
+	url = strings.ReplaceAll(url, "=", "_")
+	url = strings.ReplaceAll(url, "?", "_")
+	currentTime := time.Now()
+	filePath := filepath.Join("cache", directory, url)
+	err := os.Chtimes(filePath, currentTime, currentTime)
+	if err != nil {
+		return fmt.Errorf("unable to touch cache file: %w", err)
+	}
+	return nil
+}
+
 func SetCache(url string, directory string, body []byte) ([]byte, error) {
 	url = strings.TrimPrefix(url, "https://")
 	url = strings.ReplaceAll(url, "/", "_")
