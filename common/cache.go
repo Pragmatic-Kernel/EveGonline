@@ -2,6 +2,7 @@ package common
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"strings"
 	"time"
 )
+
+var ErrCacheExpired = errors.New("cache too old")
 
 func SetCache(url string, body []byte) ([]byte, error) {
 	url = strings.TrimPrefix(url, "https://")
@@ -38,7 +41,6 @@ func MoveCacheFile(url string) error {
 		return err
 	}
 	defer file.Close()
-	fmt.Printf("Moving.\n")
 	currentTimefmt := time.Now().Format("_2006-01-02_15_04")
 	e := os.Rename(file.Name(), file.Name()+currentTimefmt)
 	if e != nil {
@@ -47,7 +49,7 @@ func MoveCacheFile(url string) error {
 	return nil
 }
 
-func GetCache(url string, maxage int, move bool) ([]byte, error) {
+func GetCache(url string, maxage int) ([]byte, error) {
 	// if maxage = 0; no expiry
 	url = strings.TrimPrefix(url, "https://")
 	url = strings.ReplaceAll(url, "/", "_")
@@ -65,13 +67,7 @@ func GetCache(url string, maxage int, move bool) ([]byte, error) {
 			return nil, fmt.Errorf("error while checking age for cache file: %w", err)
 		}
 		if fileAge > maxage {
-			if move {
-				err := MoveCacheFile(url)
-				if err != nil {
-					return nil, fmt.Errorf("unable to move cache file: %w", err)
-				}
-			}
-			return nil, nil
+			return nil, ErrCacheExpired
 		}
 	}
 	_, err = io.Copy(&body, file)

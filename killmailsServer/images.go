@@ -80,7 +80,7 @@ func getImageFromCache(imageType string, imageId uint, size uint) ([]byte, error
 		return nil, err
 	}
 	expiry := getExpiryFromType(imageType)
-	payload, err := common.GetCache(url, expiry, false)
+	payload, err := common.GetCache(url, expiry)
 	if err != nil {
 		// FIXME
 		return nil, err
