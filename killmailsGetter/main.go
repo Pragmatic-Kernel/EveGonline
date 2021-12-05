@@ -111,11 +111,11 @@ func getKillmailIDsWithToken(db *gorm.DB, token common.Token) ([]common.Killmail
 		url := fmt.Sprintf(common.EveApiKillmailCharAPIUrl, token.CharID)
 		fmt.Println(url)
 	}
-	body, err := common.GetCache(url, 10000)
+	body, err := common.GetCache(url, "recent", 10000)
 	if err != nil {
 		if err == common.ErrCacheExpired {
 			fmt.Printf("File too old, moving.\n")
-			err = common.MoveCacheFile(url)
+			err = common.MoveCacheFile(url, "recent")
 			if err != nil {
 				return nil, fmt.Errorf("error moving file cache: %w", err)
 			}
@@ -155,7 +155,7 @@ func getKillmailIDsWithToken(db *gorm.DB, token common.Token) ([]common.Killmail
 	if err != nil {
 		return res, err
 	}
-	body, err = common.SetCache(url, body)
+	body, err = common.SetCache(url, "recent", body)
 	if err != nil {
 		return res, err
 	}
@@ -177,7 +177,7 @@ func getKillmailDetails(km *common.Killmail) error {
 	id := km.ID
 	hash := km.Hash
 	url := fmt.Sprintf(common.EveApiKillmailDetailsAPIUrl, id, hash)
-	body, err := common.GetCache(url, 0)
+	body, err := common.GetCache(url, "killmails", 0)
 	if err != nil {
 		return fmt.Errorf("error fetching cache: %w", err)
 	}
@@ -206,7 +206,7 @@ func getKillmailDetails(km *common.Killmail) error {
 	if err != nil {
 		return err
 	}
-	body, err = common.SetCache(url, body)
+	body, err = common.SetCache(url, "killmails", body)
 	if err != nil {
 		return err
 	}

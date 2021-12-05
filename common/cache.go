@@ -13,12 +13,12 @@ import (
 
 var ErrCacheExpired = errors.New("cache too old")
 
-func SetCache(url string, body []byte) ([]byte, error) {
+func SetCache(url string, directory string, body []byte) ([]byte, error) {
 	url = strings.TrimPrefix(url, "https://")
 	url = strings.ReplaceAll(url, "/", "_")
 	url = strings.ReplaceAll(url, "=", "_")
 	url = strings.ReplaceAll(url, "?", "_")
-	file, err := os.Create(filepath.Join("cache", url))
+	file, err := os.Create(filepath.Join("cache", directory, url))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create cache file: %w", err)
 	}
@@ -31,12 +31,12 @@ func SetCache(url string, body []byte) ([]byte, error) {
 	return body, nil
 }
 
-func MoveCacheFile(url string) error {
+func MoveCacheFile(url string, directory string) error {
 	url = strings.TrimPrefix(url, "https://")
 	url = strings.ReplaceAll(url, "/", "_")
 	url = strings.ReplaceAll(url, "=", "_")
 	url = strings.ReplaceAll(url, "?", "_")
-	file, err := os.Open(filepath.Join("cache", url))
+	file, err := os.Open(filepath.Join("cache", directory, url))
 	if err != nil {
 		return err
 	}
@@ -49,14 +49,14 @@ func MoveCacheFile(url string) error {
 	return nil
 }
 
-func GetCache(url string, maxage int) ([]byte, error) {
+func GetCache(url string, directory string, maxage int) ([]byte, error) {
 	// if maxage = 0; no expiry
 	url = strings.TrimPrefix(url, "https://")
 	url = strings.ReplaceAll(url, "/", "_")
 	url = strings.ReplaceAll(url, "=", "_")
 	url = strings.ReplaceAll(url, "?", "_")
 	body := bytes.Buffer{}
-	file, err := os.Open(filepath.Join("cache", url))
+	file, err := os.Open(filepath.Join("cache", directory, url))
 	if err != nil {
 		return nil, nil
 	}

@@ -62,10 +62,10 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Cannot get image from ESI"))
 		return
 	}
-	payload, err = common.SetCache(url, payload)
+	payload, err = common.SetCache(url, imageType, payload)
 	if err != nil {
 		fmt.Println(err)
-		w.Write([]byte("Cannot get image from ESI"))
+		w.Write([]byte("Cannot set cache"))
 		return
 	}
 	w.Header().Add("Cache-Control", "max-age=7200")
@@ -80,7 +80,7 @@ func getImageFromCache(imageType string, imageId uint, size uint) ([]byte, error
 		return nil, err
 	}
 	expiry := getExpiryFromType(imageType)
-	payload, err := common.GetCache(url, expiry)
+	payload, err := common.GetCache(url, imageType, expiry)
 	if err != nil {
 		// FIXME
 		return nil, err
@@ -115,17 +115,21 @@ func buildImageURL(imageType string, imageId uint, size uint) (string, error) {
 		return imageType + "/" + fmt.Sprintf("%d", imageId) + "/portrait?size=" + fmt.Sprintf("%d", size), nil
 	case "types":
 		return fmt.Sprintf("%d", imageId) + "_" + fmt.Sprintf("%d", size) + ".png", nil
+	case "renders":
+		return fmt.Sprintf("%d", imageId) + ".png", nil
 	}
 	return "", fmt.Errorf("unable to build URL for type: %s and id: %d", imageType, imageId)
 }
 
 func getExpiryFromType(imageType string) int {
 	switch imageType {
-	case "corporation":
+	case "corporations":
 		return 86400 * 3
-	case "char":
+	case "chars":
 		return 86400 * 3
-	case "type":
+	case "types":
+		return 0
+	case "renders":
 		return 0
 	}
 	return 0
