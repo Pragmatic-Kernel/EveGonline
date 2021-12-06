@@ -16,38 +16,58 @@ import (
 
 var ErrNotModified = errors.New("error not modified")
 
-func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	imageType := strings.Split(r.URL.Path, "/")[2]
-	fmt.Println(imageType)
-	imageIdstr := strings.Split(r.URL.Path, "/")[3]
+func getImageTypeAndId(urlPath string) (string, uint, error) {
+	pathElements := strings.Split(urlPath, "/")
+	if len(pathElements) < 4 {
+		return "", 0, errors.New("invalid Path")
+	}
+	imageType := pathElements[2]
+	if imageType != "renders" && imageType != "characters" && imageType != "corporations" && imageType != "types" {
+		return "", 0, errors.New("invalid Image Type")
+	}
+	imageIdstr := pathElements[3]
 	imageId64, err := strconv.ParseUint(imageIdstr, 10, 64)
+	if err != nil {
+		return "", 0, errors.New("invalid Image Id")
+	}
 	imageId := uint(imageId64)
+	return imageType, imageId, nil
+}
+
+func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	imageType, imageId, err := getImageTypeAndId(r.URL.Path)
 	if err != nil {
 		fmt.Println(err)
-		w.Write([]byte("Cannot parse image URL"))
+		w.Write([]byte("Cannot parse image URL\n"))
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	fmt.Println(imageId)
 	size, err := getSizeFromUrl(*r.URL)
 	if err != nil {
 		fmt.Println(err)
-		w.Write([]byte(err.Error()))
+		w.Write([]byte("Cannot get image size\n"))
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	payload, err := getImageFromCache(imageType, imageId, size)
 	if err != nil {
 		fmt.Println(err)
-		w.Write([]byte("Cannot get image from cache"))
+		w.Write([]byte("Cannot get image from cache\n"))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	if payload != nil {
 		w.Header().Add("Cache-Control", "max-age=7200")
-		w.WriteHeader(http.StatusOK)
 		w.Write(payload)
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 	url, err := buildImageURL(imageType, imageId, size)
 	if err != nil {
 		fmt.Println(err)
-		w.Write([]byte("Cannot build image URL"))
+		w.Write([]byte("Cannot build image URL\n"))
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	asset := common.Asset{}
@@ -58,18 +78,21 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 			err := common.TouchFile(url, imageType)
 			if err != nil {
 				fmt.Println(err)
-				w.Write([]byte("Cannot update cache"))
+				w.Write([]byte("Cannot update cache\n"))
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 			payload, err = common.GetCache(url, imageType, 0)
 			if err != nil {
 				fmt.Println(err)
-				w.Write([]byte("Cannot get cache post update"))
+				w.Write([]byte("Cannot get cache post update\n"))
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 		} else {
 			fmt.Println(err)
-			w.Write([]byte("Cannot get image from ESI"))
+			w.Write([]byte("Cannot get image from ESI\n"))
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	} else {
@@ -84,6 +107,7 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 			w.Write([]byte("Cannot set cache"))
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
