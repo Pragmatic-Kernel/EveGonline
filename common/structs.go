@@ -145,26 +145,26 @@ type EnrichedKM struct {
 
 type EnrichedVictim struct {
 	Victim
-	CharName       string          `json:"character_name"`
-	CharPortrait   string          `json:"character_portrait"`
-	CorpName       string          `json:"corporation_name"`
-	CorpLogo       string          `json:"corporation_logo"`
-	ShipTypeName   string          `json:"ship_type_name"`
-	EnrichedItems  *[]EnrichedItem `json:"items"`
-	ShipTypeIcon   string          `json:"ship_type_icon"`
-	ShipTypeRender string          `json:"ship_type_render"`
+	CharacterName     string          `json:"character_name"`
+	CharacterPortrait string          `json:"character_portrait"`
+	CorporationName   string          `json:"corporation_name"`
+	CorporationLogo   string          `json:"corporation_logo"`
+	ShipTypeName      string          `json:"ship_type_name"`
+	EnrichedItems     *[]EnrichedItem `json:"items"`
+	ShipTypeIcon      string          `json:"ship_type_icon"`
+	ShipTypeRender    string          `json:"ship_type_render"`
 }
 
 type EnrichedAttacker struct {
 	Attacker
-	CharName       string `json:"character_name"`
-	CharPortrait   string `json:"character_portrait"`
-	CorpName       string `json:"corporation_name"`
-	CorpLogo       string `json:"corporation_logo"`
-	ShipTypeName   string `json:"ship_type_name"`
-	ShipTypeIcon   string `json:"ship_type_icon"`
-	WeaponTypeName string `json:"weapon_type_name"`
-	WeaponTypeIcon string `json:"weapon_type_icon"`
+	CharacterName     string `json:"character_name"`
+	CharacterPortrait string `json:"character_portrait"`
+	CorporationName   string `json:"corporation_name"`
+	CorporationLogo   string `json:"corporation_logo"`
+	ShipTypeName      string `json:"ship_type_name"`
+	ShipTypeIcon      string `json:"ship_type_icon"`
+	WeaponTypeName    string `json:"weapon_type_name"`
+	WeaponTypeIcon    string `json:"weapon_type_icon"`
 }
 
 type EnrichedItem struct {
@@ -176,6 +176,6 @@ type EnrichedItem struct {
 
 type EnrichedSubItem struct {
 	SubItem
-	SubItemName string `json:"item_name"`
-	SubItemIcon string `json:"item_icon"`
+	ItemName string `json:"item_name"`
+	ItemIcon string `json:"item_icon"`
 }
