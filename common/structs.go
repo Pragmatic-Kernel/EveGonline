@@ -122,3 +122,55 @@ type Asset struct {
 	Etag string
 	Size uint
 }
+
+type EnrichedKMShort struct {
+	Victim       EnrichedVictim   `json:"victim"`
+	Attacker     EnrichedAttacker `json:"attacker"`
+	SolarSystem  SolarSystem      `json:"solar_system"`
+	ID           uint             `json:"killmail_id"`
+	KillmailTime time.Time        `json:"killmail_time"`
+	MoonID       uint             `json:"moon_id"`
+	WarID        uint             `json:"war_id"`
+}
+
+type EnrichedKM struct {
+	Victim       EnrichedVictim      `json:"victim"`
+	Attackers    *[]EnrichedAttacker `json:"attackers"`
+	SolarSystem  SolarSystem         `json:"solar_system"`
+	ID           uint                `json:"killmail_id"`
+	KillmailTime time.Time           `json:"killmail_time"`
+	MoonID       uint                `json:"moon_id"`
+	WarID        uint                `json:"war_id"`
+}
+
+type EnrichedVictim struct {
+	Victim
+	CharName      string          `json:"character_name"`
+	CharImage     string          `json:"character_image"`
+	CorpName      string          `json:"corporation_name"`
+	CorpImage     string          `json:"corporation_image"`
+	ShipName      string          `json:"ship_name"`
+	EnrichedItems *[]EnrichedItem `json:"items"`
+	ShipImage     string          `json:"ship_image"`
+}
+
+type EnrichedAttacker struct {
+	Attacker
+	CharName       string `json:"character_name"`
+	CharImage      string `json:"character_image"`
+	CorpName       string `json:"corporation_name"`
+	CorpImage      string `json:"corporation_image"`
+	ShipTypeName   string `json:"ship_type_name"`
+	WeaponTypeName string `json:"weapon_type_name"`
+}
+
+type EnrichedItem struct {
+	Item
+	EnrichedSubItems *[]EnrichedSubItem `json:"items"`
+	ItemName         string             `json:"item_name"`
+}
+
+type EnrichedSubItem struct {
+	SubItem
+	SubItemName string `json:"subitem_name"`
+}
