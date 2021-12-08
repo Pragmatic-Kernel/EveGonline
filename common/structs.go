@@ -145,32 +145,37 @@ type EnrichedKM struct {
 
 type EnrichedVictim struct {
 	Victim
-	CharName      string          `json:"character_name"`
-	CharImage     string          `json:"character_image"`
-	CorpName      string          `json:"corporation_name"`
-	CorpImage     string          `json:"corporation_image"`
-	ShipName      string          `json:"ship_name"`
-	EnrichedItems *[]EnrichedItem `json:"items"`
-	ShipImage     string          `json:"ship_image"`
+	CharName       string          `json:"character_name"`
+	CharPortrait   string          `json:"character_portrait"`
+	CorpName       string          `json:"corporation_name"`
+	CorpLogo       string          `json:"corporation_logo"`
+	ShipTypeName   string          `json:"ship_type_name"`
+	EnrichedItems  *[]EnrichedItem `json:"items"`
+	ShipTypeIcon   string          `json:"ship_type_icon"`
+	ShipTypeRender string          `json:"ship_type_render"`
 }
 
 type EnrichedAttacker struct {
 	Attacker
 	CharName       string `json:"character_name"`
-	CharImage      string `json:"character_image"`
+	CharPortrait   string `json:"character_portrait"`
 	CorpName       string `json:"corporation_name"`
-	CorpImage      string `json:"corporation_image"`
+	CorpLogo       string `json:"corporation_logo"`
 	ShipTypeName   string `json:"ship_type_name"`
+	ShipTypeIcon   string `json:"ship_type_icon"`
 	WeaponTypeName string `json:"weapon_type_name"`
+	WeaponTypeIcon string `json:"weapon_type_icon"`
 }
 
 type EnrichedItem struct {
 	Item
 	EnrichedSubItems *[]EnrichedSubItem `json:"items"`
 	ItemName         string             `json:"item_name"`
+	ItemIcon         string             `json:"item_icon"`
 }
 
 type EnrichedSubItem struct {
 	SubItem
-	SubItemName string `json:"subitem_name"`
+	SubItemName string `json:"item_name"`
+	SubItemIcon string `json:"item_icon"`
 }
