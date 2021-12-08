@@ -60,7 +60,6 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	if payload != nil {
 		w.Header().Add("Cache-Control", "max-age=7200")
 		w.Write(payload)
-		w.WriteHeader(http.StatusOK)
 		return
 	}
 	url, err := buildImageURL(imageType, imageId, size)
@@ -174,7 +173,7 @@ func getExpiryFromType(imageType string) int {
 	switch imageType {
 	case "corporations":
 		return 86400 * 3
-	case "chars":
+	case "characters":
 		return 86400 * 3
 	case "types":
 		return 0
