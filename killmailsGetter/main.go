@@ -111,7 +111,7 @@ func getKillmailIDsWithToken(db *gorm.DB, token common.Token) ([]common.Killmail
 		url := fmt.Sprintf(common.EveApiKillmailCharAPIUrl, token.CharID)
 		fmt.Println(url)
 	}
-	body, err := common.GetCache(url, "recent", 10000)
+	body, err := common.GetCache(url, "recent", 86400)
 	if err != nil {
 		if err == common.ErrCacheExpired {
 			fmt.Printf("File too old, moving.\n")
