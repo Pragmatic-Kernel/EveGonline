@@ -179,3 +179,9 @@ type EnrichedSubItem struct {
 	ItemName string `json:"item_name"`
 	ItemIcon string `json:"item_icon"`
 }
+
+type ItemPrice struct {
+	AdjustedPrice float64 `json:"adjusted_price"`
+	AveragePrice  float64 `json:"average_price"`
+	ItemTypeID    uint    `json:"type_id"`
+}
