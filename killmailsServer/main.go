@@ -120,25 +120,40 @@ func getKMMapping(km *common.Killmail) map[uint]string {
 }
 
 func enrichKMShort(km *common.EnrichedKMShort, mapping map[uint]string) {
-	km.Victim.CharName = mapping[km.Victim.CharacterID]
-	km.Victim.CorpName = mapping[km.Victim.CorporationID]
-	km.Victim.ShipName = mapping[km.Victim.ShipTypeID]
-	km.Attacker.CharName = mapping[km.Attacker.CharacterID]
-	km.Attacker.CorpName = mapping[km.Attacker.CorporationID]
+	km.Victim.CharacterName = mapping[km.Victim.CharacterID]
+	km.Victim.CharacterPortrait = getImageURLfromIDTypeSize(km.Victim.CharacterID, "characters", 64)
+	km.Victim.CorporationName = mapping[km.Victim.CorporationID]
+	km.Victim.CorporationLogo = getImageURLfromIDTypeSize(km.Victim.CorporationID, "corporations", 64)
+	km.Victim.ShipTypeName = mapping[km.Victim.ShipTypeID]
+	km.Victim.ShipTypeIcon = getImageURLfromIDTypeSize(km.Victim.ShipTypeID, "icons", 64)
+	km.Attacker.CharacterName = mapping[km.Attacker.CharacterID]
+	km.Attacker.CharacterPortrait = getImageURLfromIDTypeSize(km.Attacker.CharacterID, "characters", 64)
+	km.Attacker.CorporationName = mapping[km.Attacker.CorporationID]
+	km.Attacker.CorporationLogo = getImageURLfromIDTypeSize(km.Attacker.CorporationID, "corporations", 64)
 	km.Attacker.ShipTypeName = mapping[km.Attacker.ShipTypeID]
+	km.Attacker.ShipTypeIcon = getImageURLfromIDTypeSize(km.Attacker.ShipTypeID, "icons", 64)
 	km.Attacker.WeaponTypeName = mapping[km.Attacker.WeaponTypeID]
+	km.Attacker.WeaponTypeIcon = getImageURLfromIDTypeSize(km.Attacker.WeaponTypeID, "icons", 64)
 }
 
 func enrichKM(km *common.EnrichedKM, mapping map[uint]string) {
-	km.Victim.CharName = mapping[km.Victim.CharacterID]
-	km.Victim.CorpName = mapping[km.Victim.CorporationID]
-	km.Victim.ShipName = mapping[km.Victim.ShipTypeID]
+	km.Victim.CharacterName = mapping[km.Victim.CharacterID]
+	km.Victim.CharacterPortrait = getImageURLfromIDTypeSize(km.Victim.CharacterID, "characters", 64)
+	km.Victim.CorporationName = mapping[km.Victim.CorporationID]
+	km.Victim.CorporationLogo = getImageURLfromIDTypeSize(km.Victim.CorporationID, "corporations", 64)
+	km.Victim.ShipTypeName = mapping[km.Victim.ShipTypeID]
+	km.Victim.ShipTypeIcon = getImageURLfromIDTypeSize(km.Victim.ShipTypeID, "icons", 64)
+	km.Victim.ShipTypeRender = getImageURLfromIDTypeSize(km.Victim.ShipTypeID, "renders", 128)
 	attackers := []common.EnrichedAttacker{}
 	for _, attacker := range *km.Attackers {
-		attacker.CharName = mapping[attacker.CharacterID]
-		attacker.CorpName = mapping[attacker.CorporationID]
+		attacker.CharacterName = mapping[attacker.CharacterID]
+		attacker.CharacterPortrait = getImageURLfromIDTypeSize(attacker.CharacterID, "characters", 64)
+		attacker.CorporationName = mapping[attacker.CorporationID]
+		attacker.CorporationLogo = getImageURLfromIDTypeSize(attacker.CorporationID, "corporations", 64)
 		attacker.ShipTypeName = mapping[attacker.ShipTypeID]
+		attacker.ShipTypeIcon = getImageURLfromIDTypeSize(attacker.ShipTypeID, "icons", 64)
 		attacker.WeaponTypeName = mapping[attacker.WeaponTypeID]
+		attacker.WeaponTypeIcon = getImageURLfromIDTypeSize(attacker.WeaponTypeID, "icons", 64)
 		attackers = append(attackers, attacker)
 	}
 	km.Attackers = &attackers
@@ -146,10 +161,12 @@ func enrichKM(km *common.EnrichedKM, mapping map[uint]string) {
 		enrichedItems := []common.EnrichedItem{}
 		for _, item := range *km.Victim.EnrichedItems {
 			item.ItemName = mapping[item.ItemTypeID]
+			item.ItemIcon = getImageURLfromIDTypeSize(item.ItemTypeID, "icons", 64)
 			if item.SubItems != nil {
 				subitems := []common.EnrichedSubItem{}
 				for _, subitem := range *item.EnrichedSubItems {
-					subitem.SubItemName = mapping[subitem.ItemTypeID]
+					subitem.ItemName = mapping[subitem.ItemTypeID]
+					subitem.ItemIcon = getImageURLfromIDTypeSize(subitem.ItemTypeID, "icons", 64)
 					subitems = append(subitems, subitem)
 				}
 				item.EnrichedSubItems = &subitems
@@ -167,6 +184,20 @@ func filterAttackers(attackers []common.Attacker) common.Attacker {
 		}
 	}
 	return attackers[0]
+}
+
+func getImageURLfromIDTypeSize(ID uint, Type string, size uint) string {
+	switch Type {
+	case "renders":
+		return "/images/renders/" + fmt.Sprintf("%d", ID) + "/render?size=" + fmt.Sprintf("%d", size)
+	case "icons":
+		return "/images/types/" + fmt.Sprintf("%d", ID) + "/icon?size=" + fmt.Sprintf("%d", size)
+	case "characters":
+		return "/images/characters/" + fmt.Sprintf("%d", ID) + "/portrait?size=" + fmt.Sprintf("%d", size)
+	case "corporations":
+		return "/images/corporations/" + fmt.Sprintf("%d", ID) + "/logo?size=" + fmt.Sprintf("%d", size)
+	}
+	return ""
 }
 
 func main() {

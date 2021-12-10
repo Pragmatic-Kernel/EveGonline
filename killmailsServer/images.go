@@ -38,35 +38,37 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	imageType, imageId, err := getImageTypeAndId(r.URL.Path)
 	if err != nil {
 		fmt.Println(err)
-		w.Write([]byte("Cannot parse image URL\n"))
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Cannot parse image URL\n"))
 		return
 	}
 	fmt.Println(imageId)
 	size, err := getSizeFromUrl(*r.URL)
 	if err != nil {
 		fmt.Println(err)
-		w.Write([]byte("Cannot get image size\n"))
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Cannot get image size\n"))
 		return
 	}
 	payload, err := getImageFromCache(imageType, imageId, size)
 	if err != nil {
 		fmt.Println(err)
-		w.Write([]byte("Cannot get image from cache\n"))
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Cannot get image from cache\n"))
 		return
 	}
 	if payload != nil {
 		w.Header().Add("Cache-Control", "max-age=7200")
+		w.WriteHeader(http.StatusOK)
 		w.Write(payload)
 		return
 	}
+	//build image URL for ESI
 	url, err := buildImageURL(imageType, imageId, size)
 	if err != nil {
 		fmt.Println(err)
-		w.Write([]byte("Cannot build image URL\n"))
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Cannot build image URL\n"))
 		return
 	}
 	asset := common.Asset{}
@@ -77,21 +79,21 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 			err := common.TouchFile(url, imageType)
 			if err != nil {
 				fmt.Println(err)
-				w.Write([]byte("Cannot update cache\n"))
 				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte("Cannot update cache\n"))
 				return
 			}
 			payload, err = common.GetCache(url, imageType, 0)
 			if err != nil {
 				fmt.Println(err)
-				w.Write([]byte("Cannot get cache post update\n"))
 				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte("Cannot get cache post update\n"))
 				return
 			}
 		} else {
 			fmt.Println(err)
-			w.Write([]byte("Cannot get image from ESI\n"))
 			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Cannot get image from ESI\n"))
 			return
 		}
 	} else {
@@ -105,8 +107,8 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		}).Create(&asset)
 		if err != nil {
 			fmt.Println(err)
-			w.Write([]byte("Cannot set cache"))
 			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Cannot set cache"))
 			return
 		}
 	}
@@ -118,14 +120,12 @@ func getImage(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 func getImageFromCache(imageType string, imageId uint, size uint) ([]byte, error) {
 	url, err := buildImageURL(imageType, imageId, size)
 	if err != nil {
-		// FIXME
-		return nil, err
+		return nil, fmt.Errorf("cannot build image URL: %w", err)
 	}
 	expiry := getExpiryFromType(imageType)
 	payload, err := common.GetCache(url, imageType, expiry)
 	if err != nil {
-		// FIXME
-		return nil, err
+		return nil, fmt.Errorf("cannot retrieve image from cache: %w", err)
 	}
 	return payload, nil
 }
@@ -184,6 +184,10 @@ func getExpiryFromType(imageType string) int {
 }
 
 func getSizeFromUrl(url url.URL) (uint, error) {
+	imageType, _, err := getImageTypeAndId(url.Path)
+	if err != nil {
+		return 0, fmt.Errorf("invalid URL: %w", err)
+	}
 	query := url.Query()
 	sizes, ok := query["size"]
 	if !ok {
@@ -196,8 +200,23 @@ func getSizeFromUrl(url url.URL) (uint, error) {
 	if err != nil {
 		return 0, fmt.Errorf("invalid size parameter, invalid uint")
 	}
-	if size != 32 && size != 64 && size != 128 && size != 256 && size != 512 {
-		return 0, fmt.Errorf("invalid size parameter, invalid size: %d", size)
+	switch imageType {
+	case "characters":
+		if size != 32 && size != 64 && size != 128 && size != 256 {
+			return 0, fmt.Errorf("invalid size parameter, invalid size: %d for %s", size, imageType)
+		}
+	case "corporations":
+		if size != 32 && size != 64 && size != 128 && size != 256 {
+			return 0, fmt.Errorf("invalid size parameter, invalid size: %d for %s", size, imageType)
+		}
+	case "renders":
+		if size != 32 && size != 64 && size != 128 && size != 256 && size != 512 {
+			return 0, fmt.Errorf("invalid size parameter, invalid size: %d for %s", size, imageType)
+		}
+	case "types":
+		if size != 32 && size != 64 {
+			return 0, fmt.Errorf("invalid size parameter, invalid size: %d for %s", size, imageType)
+		}
 	}
 	return uint(size), nil
 }
