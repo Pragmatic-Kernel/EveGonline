@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/square/go-jose v2.6.0+incompatible
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 	gorm.io/driver/sqlite v1.2.6
 	gorm.io/gorm v1.22.4
 )
@@ -13,5 +14,6 @@ require (
 	github.com/jinzhu/now v1.1.3 // indirect
 	github.com/mattn/go-sqlite3 v1.14.9 // indirect
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect
+	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
