@@ -83,7 +83,7 @@ func getKillmail(kmID string) (*common.EnrichedKM, error) {
 }
 
 func formatKillmails(kms *[]common.EnrichedKMShort) error {
-	fmt.Printf("%-4s %-15s %-5s %-25s %-50s %-25s %-10s %-9s\n", "KM", "System", "Sec.", "Victim", "Ship", "Final Blow", "Date", "ID")
+	fmt.Printf("%4s %15s %4s %25s %50s %25s %10s %9s\n", "KM", "System", "Sec.", "Victim", "Ship", "Final Blow", "Date", "ID")
 	for i := 0; i < 149; i++ {
 		fmt.Printf("=")
 	}
@@ -92,9 +92,9 @@ func formatKillmails(kms *[]common.EnrichedKMShort) error {
 		kmDate := km.KillmailTime.Format("02/01/2006")
 		loss := getKillmailStatus(&km)
 		if loss {
-			fmt.Printf("\033[31m#%-3d %-15s %-5.1f %-25s %-50s %-25s %-10s %-9d\n", index, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
+			fmt.Printf("\033[31m#%-3d %15s %4.1f %25s %50s %25s %10s %9d\n", index, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
 		} else {
-			fmt.Printf("\033[32m#%-3d %-15s %-5.1f %-25s %-50s %-25s %-10s %-9d\n", index, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
+			fmt.Printf("\033[32m#%-3d %15s %4.1f %25s %50s %25s %10s %9d\n", index, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
 		}
 	}
 	return nil
