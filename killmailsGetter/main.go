@@ -84,6 +84,8 @@ func main() {
 				IDsmappings, err := retrieveUnknownIDs(unknownIDs)
 				if err != nil {
 					fmt.Printf("Error while retrieving unknownIDs, skipping.\n")
+					// Ignore currently fetched KMs, and try again later
+					continue
 				} else {
 					db.Create(IDsmappings)
 				}
