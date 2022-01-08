@@ -2,7 +2,6 @@ package common
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -37,7 +36,7 @@ func RefreshToken(token *Token, clientId, secretKey string) error {
 	}
 	if resp.StatusCode != 200 {
 		fmt.Printf("Status code %d in body\n", resp.StatusCode)
-		return errors.New("invalid Status Code")
+		return fmt.Errorf("invalid Status Code: %d", resp.StatusCode)
 	}
 	token_ := PreToken{}
 	body, err := ioutil.ReadAll(resp.Body)

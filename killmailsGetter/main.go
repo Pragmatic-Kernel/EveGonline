@@ -133,6 +133,7 @@ func getKillmailIDsWithToken(db *gorm.DB, token common.Token) ([]common.Killmail
 		err := common.RefreshToken(&token, ClientId, SecretKey)
 		if err != nil {
 			fmt.Println("Error while refreshing token:", err)
+			fmt.Println("WARNING: Potentially revoked token for char: ", token.CharID)
 			return nil, err
 		}
 		db.Save(&token)
