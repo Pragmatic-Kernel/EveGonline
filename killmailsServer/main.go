@@ -57,6 +57,10 @@ func getKM(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	km := common.Killmail{}
 	db.Where("id = ?", kmId).Preload("Attackers").Preload("Victim.Items.SubItems").Preload("Attackers").Find(&km)
+	if km.ID == 0 {
+		w.WriteHeader(404)
+		return
+	}
 	solarSystem := common.GetSolarSystem(db, km.SolarSystemID)
 	mapping := getKMMapping(&km)
 	ekm := common.EnrichedKM{SolarSystem: *solarSystem}
