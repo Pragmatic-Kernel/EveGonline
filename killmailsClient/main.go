@@ -19,7 +19,8 @@ const PKID = 260635334
 func main() {
 	endpoint = os.Getenv("EVE_KMSERVER_ENDPOINT")
 	if endpoint == "" {
-		panic("No endpoint, please set EVE_KMSERVER_ENDPOINT")
+		fmt.Println("No endpoint, please set EVE_KMSERVER_ENDPOINT")
+		return
 	}
 	if len(os.Args) == 1 {
 		kms, err := getKillmails()
@@ -34,11 +35,13 @@ func main() {
 		kmID := os.Args[1]
 		km, err := getKillmail(kmID)
 		if err != nil {
-			panic(err)
+			fmt.Println("No killmail found with id: ", kmID)
+			return
 		}
 		err = formatKillmail(km)
 		if err != nil {
-			panic(err)
+			fmt.Println("Error while formatting killmail: ", err)
+			return
 		}
 	}
 }
@@ -73,6 +76,9 @@ func getKillmail(kmID string) (*common.EnrichedKM, error) {
 		return nil, fmt.Errorf("error executing GET request: %w", err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("request status error: %d", resp.StatusCode)
+	}
 	km := common.EnrichedKM{}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -168,10 +174,7 @@ func filterItems(items *[]common.EnrichedItem) map[string]map[string]uint {
 }
 
 func getKillmailStatus(km *common.EnrichedKMShort) bool {
-	if km.Victim.CorporationID == PKID {
-		return true
-	}
-	return false
+	return km.Victim.CorporationID == PKID
 }
 
 func formatSolarSystemSecurity(security float64) string {
