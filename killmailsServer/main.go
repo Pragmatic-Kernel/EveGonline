@@ -6,18 +6,20 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/Pragmatic-Kernel/EveGonline/common"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
+var lock sync.RWMutex
 var mappings map[uint]string
 
 type KMWithMap struct {
 	Killmail    common.Killmail    `json:"killmail"`
 	SolarSystem common.SolarSystem `json:"solar_system"`
-	Mapping     map[uint]string    `json:"mapping"`
 }
 
 func getKMs(db *gorm.DB, w http.ResponseWriter, _ *http.Request) {
@@ -99,7 +101,9 @@ func getKM(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func getKMMapping(km *common.Killmail) map[uint]string {
+	lock.RLock()
 	globalMapping := mappings
+	lock.RUnlock()
 	mapping := make(map[uint]string)
 	for _, attacker := range *km.Attackers {
 		mapping[attacker.CharacterID] = globalMapping[attacker.CharacterID]
@@ -213,6 +217,18 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	go func() {
+		for {
+			ticker := time.NewTicker(15 * time.Minute)
+			<-ticker.C
+			lock.Lock()
+			mappings, err = common.GetMappings(db)
+			if err != nil {
+				panic(err)
+			}
+			lock.Unlock()
+		}
+	}()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/killmails/", func(w http.ResponseWriter, r *http.Request) {
