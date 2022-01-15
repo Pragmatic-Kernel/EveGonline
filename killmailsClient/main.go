@@ -9,6 +9,8 @@ import (
 	"os"
 
 	"github.com/Pragmatic-Kernel/EveGonline/common"
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"golang.org/x/term"
 )
 
@@ -27,9 +29,33 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		err = formatKillmails(kms)
+		kmsString, err := formatKillmails(kms)
 		if err != nil {
 			panic(err)
+		}
+		items := []list.Item{}
+		for _, km := range kmsString {
+			items = append(items, item(km))
+		}
+
+		width, height, err := term.GetSize(0)
+		if err != nil {
+			panic(err)
+		}
+
+		l := list.New(items, itemDelegate{}, width, height-5)
+		l.Title = "Pragmatic Kernel Killmails"
+		l.SetShowStatusBar(true)
+		l.SetFilteringEnabled(true)
+		l.Styles.Title = titleStyle
+		l.Styles.PaginationStyle = paginationStyle
+		l.Styles.HelpStyle = helpStyle
+
+		m := model{list: l}
+
+		if err := tea.NewProgram(m).Start(); err != nil {
+			fmt.Println("Error running program:", err)
+			os.Exit(1)
 		}
 	} else if len(os.Args) == 2 {
 		kmID := os.Args[1]
@@ -38,11 +64,12 @@ func main() {
 			fmt.Println("No killmail found with id: ", kmID)
 			return
 		}
-		err = formatKillmail(km)
+		kmString, err := formatKillmail(km)
 		if err != nil {
 			fmt.Println("Error while formatting killmail: ", err)
 			return
 		}
+		fmt.Println(kmString)
 	}
 }
 
@@ -88,57 +115,57 @@ func getKillmail(kmID string) (*common.EnrichedKM, error) {
 	return &km, nil
 }
 
-func formatKillmails(kms *[]common.EnrichedKMShort) error {
-	fmt.Printf("%4s %15s %4s %25s %50s %25s %10s %9s\n", "KM", "System", "Sec.", "Victim", "Ship", "Final Blow", "Date", "ID")
-	for i := 0; i < 149; i++ {
-		fmt.Printf("=")
-	}
-	fmt.Printf("\n")
-	for index, km := range *kms {
+func formatKillmails(kms *[]common.EnrichedKMShort) ([]string, error) {
+	result := []string{}
+	for _, km := range *kms {
+		res := ""
 		kmDate := km.KillmailTime.Format("02/01/2006")
 		loss := getKillmailStatus(&km)
 		if loss {
-			fmt.Printf("\033[31m#%-3d %15s %4.1f %25s %50s %25s %10s %9d\n", index, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
+			res = fmt.Sprintf("\033[31m %15s %4.1f %25s %50s %25s %10s %9d \033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
 		} else {
-			fmt.Printf("\033[32m#%-3d %15s %4.1f %25s %50s %25s %10s %9d\n", index, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
+			res = fmt.Sprintf("\033[32m %15s %4.1f %25s %50s %25s %10s %9d \033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
 		}
+		result = append(result, res)
 	}
-	return nil
+	return result, nil
 }
 
-func formatKillmail(km *common.EnrichedKM) error {
+func formatKillmail(km *common.EnrichedKM) (string, error) {
 	width, _, err := term.GetSize(0)
+	res := ""
 	if err != nil {
-		return fmt.Errorf("error getting term width: %w", err)
+		return "", fmt.Errorf("error getting term width: %w", err)
 	}
 	for i := 0; i < width; i++ {
-		fmt.Printf("=")
+		res += "="
 	}
-	fmt.Printf("\n")
+	res += "\n"
 	finalBlow := filterAttackers(km.Attackers)
-	fmt.Printf("%s flying a %s in %s got killed by %s flying a %s\n", km.Victim.CharacterName, km.Victim.ShipTypeName, km.SolarSystem.Name, finalBlow.CharacterName, finalBlow.ShipTypeName)
+	res += fmt.Sprintf("%s flying a %s in %s got killed by %s flying a %s\n", km.Victim.CharacterName, km.Victim.ShipTypeName, km.SolarSystem.Name, finalBlow.CharacterName, finalBlow.ShipTypeName)
 	for i := 0; i < width; i++ {
-		fmt.Printf("=")
+		res += "="
 	}
-	fmt.Printf("\n")
-	fmt.Printf("ATTACKERS:\n")
+	res += "\n"
+	res += "ATTACKERS:\n"
 	for i := 0; i < 10; i++ {
-		fmt.Printf("-")
+		res += "-"
 	}
-	fmt.Printf("\n")
+	res += "\n"
 	for _, attacker := range *km.Attackers {
-		fmt.Printf("%-30s %-50s %-50s\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName)
+		res += fmt.Sprintf("%-30s %-50s %-50s\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName)
 	}
-	fmt.Printf("ITEMS:\n")
-	for i := 0; i < 10; i++ {
-		fmt.Printf("-")
+	res += "\n"
+	res += "ITEMS:\n"
+	for i := 0; i < 6; i++ {
+		res += "-"
 	}
-	fmt.Printf("\n")
+	res += "\n"
 	enrichedItems := filterItems(km.Victim.EnrichedItems)
 	for name, value := range enrichedItems {
-		fmt.Printf("%-50s \033[32m%-10d \033[31m%-10d\033[39m\n", name, value["dropped"], value["destroyed"])
+		res += fmt.Sprintf("%-50s \033[32m%-10d \033[31m%-10d\033[39m\n", name, value["dropped"], value["destroyed"])
 	}
-	return nil
+	return res, nil
 }
 
 func filterAttackers(attackers *[]common.EnrichedAttacker) *common.EnrichedAttacker {
@@ -178,8 +205,6 @@ func getKillmailStatus(km *common.EnrichedKMShort) bool {
 }
 
 func formatSolarSystemSecurity(security float64) string {
-	fmt.Println(security)
 	roundedStatus := math.Round(security/10.0) * 10.0
-	fmt.Println(roundedStatus)
 	return fmt.Sprintf("(%f)", roundedStatus)
 }
