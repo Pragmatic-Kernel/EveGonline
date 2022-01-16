@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"io"
-	"strings"
 
+	"github.com/Pragmatic-Kernel/EveGonline/common"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -93,16 +93,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			_, ok := m.list.SelectedItem().(item)
 			if ok {
 				item := m.list.SelectedItem().(item)
-				kmSplit := strings.Split(string(item), " ")
-				kmID := kmSplit[len(kmSplit)-2]
-				enrichedKM, _ := getKillmail(kmID)
-				//if err != nil {
-				//return quitTextStyle.Render(err.Error())
-				//}
+				enrichedKM, err := getKillmail(fmt.Sprint(item.ID))
+				if err != nil {
+					return m, tea.Quit
+				}
 				kmString, _ := formatKillmail(enrichedKM)
-				//if err != nil {
-				//return quitTextStyle.Render(err.Error())
-				//}
+				if err != nil {
+					return m, tea.Quit
+				}
 				return model2{m.list, kmString, false}, nil
 			}
 		}
@@ -120,9 +118,13 @@ func (m model) View() string {
 	return "\n" + m.list.View()
 }
 
-type item string
+type item common.EnrichedKMShort
 
-func (i item) FilterValue() string { return string(i) }
+func (i item) FilterValue() string {
+	km := common.EnrichedKMShort(i)
+	res := formatKillmailShort(&km)
+	return res
+}
 
 type itemDelegate struct{}
 
@@ -135,7 +137,9 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		return
 	}
 
-	str := fmt.Sprintf("%d. %s", index+1, i)
+	km := common.EnrichedKMShort(i)
+	str := formatKillmailShort(&km)
+	str = fmt.Sprintf("%d. %s", index+1, str)
 	// Pad result to mitigate the index < 2 chars
 	if index < 9 {
 		str = " " + str

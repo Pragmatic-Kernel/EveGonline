@@ -29,12 +29,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		kmsString, err := formatKillmails(kms)
-		if err != nil {
-			panic(err)
-		}
 		items := []list.Item{}
-		for _, km := range kmsString {
+		for _, km := range *kms {
 			items = append(items, item(km))
 		}
 
@@ -129,6 +125,18 @@ func formatKillmails(kms *[]common.EnrichedKMShort) ([]string, error) {
 		result = append(result, res)
 	}
 	return result, nil
+}
+
+func formatKillmailShort(km *common.EnrichedKMShort) string {
+	res := ""
+	kmDate := km.KillmailTime.Format("02/01/2006")
+	loss := getKillmailStatus(km)
+	if loss {
+		res = fmt.Sprintf("\033[31m %15s %4.1f %25s %50s %25s %10s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate)
+	} else {
+		res = fmt.Sprintf("\033[32m %15s %4.1f %25s %50s %25s %10s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate)
+	}
+	return res
 }
 
 func formatKillmail(km *common.EnrichedKM) (string, error) {
