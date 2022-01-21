@@ -34,6 +34,10 @@ func main() {
 			items = append(items, item(km))
 		}
 
+		f, _ := os.OpenFile("file.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		defer f.Close()
+		log.SetOutput(f)
+
 		width, height, err := term.GetSize(0)
 		if err != nil {
 			panic(err)
@@ -49,7 +53,7 @@ func main() {
 
 		m := model{list: l}
 
-		if err := tea.NewProgram(m).Start(); err != nil {
+		if err := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion()).Start(); err != nil {
 			fmt.Println("Error running program:", err)
 			os.Exit(1)
 		}
