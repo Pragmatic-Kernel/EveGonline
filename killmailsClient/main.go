@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -159,6 +160,7 @@ func formatKillmail(km *common.EnrichedKM) (string, error) {
 		res += "="
 	}
 	res += "\n"
+	res += "\n"
 	res += "ATTACKERS:\n"
 	for i := 0; i < 10; i++ {
 		res += "-"
@@ -216,7 +218,7 @@ func getKillmailStatus(km *common.EnrichedKMShort) bool {
 	return km.Victim.CorporationID == PKID
 }
 
-func formatSolarSystemSecurity(security float64) string {
-	roundedStatus := math.Round(security/10.0) * 10.0
-	return fmt.Sprintf("(%f)", roundedStatus)
+func formatSolarSystemSecurity(security float64) float64 {
+	roundedStatus := math.Round(security*10.0) / 10.0
+	return roundedStatus
 }
