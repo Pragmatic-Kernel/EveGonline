@@ -145,39 +145,24 @@ func formatKillmailShort(km *common.EnrichedKMShort) string {
 }
 
 func formatKillmail(km *common.EnrichedKM) (string, error) {
-	width, _, err := term.GetSize(0)
 	res := ""
-	if err != nil {
-		return "", fmt.Errorf("error getting term width: %w", err)
-	}
-	for i := 0; i < width; i++ {
-		res += "="
-	}
-	res += "\n"
 	finalBlow := filterAttackers(km.Attackers)
-	res += fmt.Sprintf("%s flying a %s in %s got killed by %s flying a %s\n", km.Victim.CharacterName, km.Victim.ShipTypeName, km.SolarSystem.Name, finalBlow.CharacterName, finalBlow.ShipTypeName)
-	for i := 0; i < width; i++ {
-		res += "="
-	}
+	secStatus := formatSolarSystemSecurity(km.SolarSystem.SecurityStatus)
+	res += fmt.Sprintf("\033[1m\033[31m%s\033[39m\033[22m lost a \033[1m%s\033[22m in \033[3m%s (%.1f)\033[23m. Final blow: \033[1m\033[32m%s\033[39m\033[22m\033[0m\n", km.Victim.CharacterName, km.Victim.ShipTypeName, km.SolarSystem.Name, secStatus, finalBlow.CharacterName)
 	res += "\n"
 	res += "\n"
-	res += "ATTACKERS:\n"
-	for i := 0; i < 10; i++ {
-		res += "-"
-	}
+	res += "\033[1m\033[4mAttackers:\033[22m\033[24m\n"
 	res += "\n"
 	for _, attacker := range *km.Attackers {
-		res += fmt.Sprintf("%-30s %-50s %-50s\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName)
+		res += fmt.Sprintf("\033[1m%-30s\033[22m %-50s \033[3m%-50s\033[23m\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName)
 	}
 	res += "\n"
-	res += "ITEMS:\n"
-	for i := 0; i < 6; i++ {
-		res += "-"
-	}
+	res += "\n"
+	res += "\033[1m\033[4mItems:\033[22m\033[24m\n"
 	res += "\n"
 	enrichedItems := filterItems(km.Victim.EnrichedItems)
 	for name, value := range enrichedItems {
-		res += fmt.Sprintf("%-50s \033[32m%-10d \033[31m%-10d\033[39m\n", name, value["dropped"], value["destroyed"])
+		res += fmt.Sprintf("%-50s \033[1m\033[32m%-10d\033[22m\033[39m \033[1m\033[31m%-10d\033[22m\033[39m\n", name, value["dropped"], value["destroyed"])
 	}
 	return res, nil
 }
