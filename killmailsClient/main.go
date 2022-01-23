@@ -138,7 +138,7 @@ func formatKillmail(km *common.EnrichedKM) (string, error) {
 	res += fmt.Sprintf("\033[1m\033[4mAttackers: %d\033[22m\033[24m\n", len(*km.Attackers))
 	res += "\n"
 	for _, attacker := range *km.Attackers {
-		res += fmt.Sprintf("\033[1m%-30s\033[22m %-50s \033[3m%-50s\033[23m\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName)
+		res += fmt.Sprintf("\033[1m%25s\033[22m %50s \033[3m%50s %10d %5.1f%%\033[23m\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName, attacker.DamageDone, getDamagePercent(attacker.DamageDone, km.Victim.DamageTaken))
 	}
 	res += "\n"
 	res += "\n"
@@ -185,4 +185,8 @@ func filterItems(items *[]common.EnrichedItem) map[string]map[string]uint {
 
 func getKillmailStatus(km *common.EnrichedKMShort) bool {
 	return km.Victim.CorporationID == PKID
+}
+
+func getDamagePercent(damageDone uint, damageTaken uint) float64 {
+	return float64(damageDone) / float64(damageTaken) * 100
 }
