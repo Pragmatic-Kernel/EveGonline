@@ -25,7 +25,8 @@ type KMWithMap struct {
 func getKMs(db *gorm.DB, w http.ResponseWriter, _ *http.Request) {
 	EnrichedKMs := []common.EnrichedKMShort{}
 	KMs := []common.Killmail{}
-	db.Preload("Attackers").Joins("Victim").Order("killmail_time desc").Find(&KMs)
+	priceMap, _ := getPrices()
+	db.Preload("Attackers").Preload("Victim.Items.SubItems").Order("killmail_time desc").Find(&KMs)
 	for _, km := range KMs {
 		mapping := getKMMapping(&km)
 		enrichedKM := common.EnrichedKMShort{}
@@ -40,6 +41,7 @@ func getKMs(db *gorm.DB, w http.ResponseWriter, _ *http.Request) {
 		enrichKMShort(&enrichedKM, mapping)
 		solarSystem := common.GetSolarSystem(db, km.SolarSystemID)
 		enrichedKM.SolarSystem = *solarSystem
+		getKMPrice(&enrichedKM, priceMap)
 		EnrichedKMs = append(EnrichedKMs, enrichedKM)
 	}
 	body, err := json.Marshal(EnrichedKMs)
@@ -51,6 +53,7 @@ func getKMs(db *gorm.DB, w http.ResponseWriter, _ *http.Request) {
 }
 
 func getKM(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	priceMap, _ := getPrices()
 	kmIdstr := strings.Split(r.URL.Path, "/")[2]
 	kmId, err := strconv.ParseUint(kmIdstr, 10, 64)
 	if err != nil {
@@ -91,6 +94,8 @@ func getKM(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	ekm.Attackers = &attackers
 	enrichKM(&ekm, mapping)
+	kmshort := getKMPrice(&common.EnrichedKMShort{Victim: ekm.Victim}, priceMap)
+	ekm.Price = kmshort.Price
 
 	body, err := json.Marshal(ekm)
 	if err != nil {

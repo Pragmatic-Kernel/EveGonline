@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"net/http"
 	"os"
 
@@ -116,30 +115,14 @@ func getKillmail(kmID string) (*common.EnrichedKM, error) {
 	return &km, nil
 }
 
-func formatKillmails(kms *[]common.EnrichedKMShort) ([]string, error) {
-	result := []string{}
-	for _, km := range *kms {
-		res := ""
-		kmDate := km.KillmailTime.Format("02/01/2006")
-		loss := getKillmailStatus(&km)
-		if loss {
-			res = fmt.Sprintf("\033[31m %15s %4.1f %25s %50s %25s %10s %9d \033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
-		} else {
-			res = fmt.Sprintf("\033[32m %15s %4.1f %25s %50s %25s %10s %9d \033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate, km.ID)
-		}
-		result = append(result, res)
-	}
-	return result, nil
-}
-
 func formatKillmailShort(km *common.EnrichedKMShort) string {
 	res := ""
 	kmDate := km.KillmailTime.Format("02/01/2006")
 	loss := getKillmailStatus(km)
 	if loss {
-		res = fmt.Sprintf("\033[31m %15s %4.1f %25s %50s %25s %10s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate)
+		res = fmt.Sprintf("\033[31m %15s %4.1f %25s %50s %25s %15s %15s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, common.FormatPrice(km.Price), kmDate)
 	} else {
-		res = fmt.Sprintf("\033[32m %15s %4.1f %25s %50s %25s %10s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, kmDate)
+		res = fmt.Sprintf("\033[32m %15s %4.1f %25s %50s %25s %15s %15s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, common.FormatPrice(km.Price), kmDate)
 	}
 	return res
 }
@@ -147,11 +130,12 @@ func formatKillmailShort(km *common.EnrichedKMShort) string {
 func formatKillmail(km *common.EnrichedKM) (string, error) {
 	res := ""
 	finalBlow := filterAttackers(km.Attackers)
-	secStatus := formatSolarSystemSecurity(km.SolarSystem.SecurityStatus)
-	res += fmt.Sprintf("\033[1m\033[31m%s\033[39m\033[22m lost a \033[1m%s\033[22m in \033[3m%s (%.1f)\033[23m. Final blow: \033[1m\033[32m%s\033[39m\033[22m\033[0m\n", km.Victim.CharacterName, km.Victim.ShipTypeName, km.SolarSystem.Name, secStatus, finalBlow.CharacterName)
+	res += fmt.Sprintf("\033[1m\033[31m%s\033[39m\033[22m lost a \033[1m%s\033[22m in \033[3m%s (%.1f)\033[23m. Final blow: \033[1m\033[32m%s\033[39m\033[22m\033[0m\n", km.Victim.CharacterName, km.Victim.ShipTypeName, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, finalBlow.CharacterName)
+	res += "\n"
+	res += fmt.Sprintf("\033[1m\033[7mKill Value: %s\033[27m\033[22m\n", common.FormatPrice(km.Price))
 	res += "\n"
 	res += "\n"
-	res += "\033[1m\033[4mAttackers:\033[22m\033[24m\n"
+	res += fmt.Sprintf("\033[1m\033[4mAttackers: %d\033[22m\033[24m\n", len(*km.Attackers))
 	res += "\n"
 	for _, attacker := range *km.Attackers {
 		res += fmt.Sprintf("\033[1m%-30s\033[22m %-50s \033[3m%-50s\033[23m\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName)
@@ -201,9 +185,4 @@ func filterItems(items *[]common.EnrichedItem) map[string]map[string]uint {
 
 func getKillmailStatus(km *common.EnrichedKMShort) bool {
 	return km.Victim.CorporationID == PKID
-}
-
-func formatSolarSystemSecurity(security float64) float64 {
-	roundedStatus := math.Round(security*10.0) / 10.0
-	return roundedStatus
 }

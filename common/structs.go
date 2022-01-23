@@ -131,6 +131,7 @@ type EnrichedKMShort struct {
 	KillmailTime time.Time        `json:"killmail_time"`
 	MoonID       uint             `json:"moon_id"`
 	WarID        uint             `json:"war_id"`
+	Price        float64          `json:"price"`
 }
 
 type EnrichedKM struct {
@@ -141,6 +142,7 @@ type EnrichedKM struct {
 	KillmailTime time.Time           `json:"killmail_time"`
 	MoonID       uint                `json:"moon_id"`
 	WarID        uint                `json:"war_id"`
+	Price        float64             `json:"price"`
 }
 
 type EnrichedVictim struct {

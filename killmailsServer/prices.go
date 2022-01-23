@@ -43,7 +43,7 @@ func getPricesFromCache() (*[]common.ItemPrice, error) {
 			return nil, fmt.Errorf("unable to unmarshal cache file: %w", err)
 		}
 	}
-	return nil, nil
+	return &prices, nil
 }
 
 func getPricesFromESI() (*[]common.ItemPrice, error) {
@@ -79,11 +79,29 @@ func getPricesFromESI() (*[]common.ItemPrice, error) {
 func getPricesMap(itemPrices *[]common.ItemPrice) map[uint]float64 {
 	priceMap := make(map[uint]float64)
 	for _, itemPrice := range *itemPrices {
-		if itemPrice.AdjustedPrice != 0.0 {
+		if itemPrice.AveragePrice == 0.0 {
 			priceMap[itemPrice.ItemTypeID] = itemPrice.AdjustedPrice
 		} else {
 			priceMap[itemPrice.ItemTypeID] = itemPrice.AveragePrice
 		}
 	}
 	return priceMap
+}
+
+func pricesMapToJson(priceMap map[uint]float64) ([]byte, error) {
+	return json.Marshal(priceMap)
+}
+
+func getKMPrice(km *common.EnrichedKMShort, priceMap map[uint]float64) *common.EnrichedKMShort {
+	price := 0.0
+	price += priceMap[km.Victim.ShipTypeID]
+	for _, item := range *km.Victim.Items {
+		itemPrice := priceMap[item.ItemTypeID]
+		priceDropped := itemPrice * float64(item.QuantityDropped)
+		priceDestroyed := itemPrice * float64(item.QuantityDestroyed)
+		price += priceDropped
+		price += priceDestroyed
+	}
+	km.Price = price
+	return km
 }
