@@ -119,6 +119,9 @@ func getKillmail(kmID string) (*common.EnrichedKM, error) {
 func formatKillmailShort(km *common.EnrichedKMShort) string {
 	res := ""
 	kmDate := km.KillmailTime.Format("02/01/2006 15:04:05")
+	if km.Victim.CharacterID == 0 {
+		km.Victim.CharacterName = km.Victim.CorporationName
+	}
 	loss := getKillmailStatus(km)
 	if loss {
 		res = fmt.Sprintf("\033[31m %15s %4.1f %25s %50s %25s %15s %15s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, common.FormatPrice(km.Price), kmDate)
