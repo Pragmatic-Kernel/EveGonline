@@ -41,7 +41,7 @@ func getKMs(db *gorm.DB, w http.ResponseWriter, _ *http.Request) {
 		enrichKMShort(&enrichedKM, mapping)
 		solarSystem := common.GetSolarSystem(db, km.SolarSystemID)
 		enrichedKM.SolarSystem = *solarSystem
-		getKMPrice(&enrichedKM, priceMap)
+		getKMPriceShort(&enrichedKM, priceMap)
 		EnrichedKMs = append(EnrichedKMs, enrichedKM)
 	}
 	body, err := json.Marshal(EnrichedKMs)
@@ -94,8 +94,7 @@ func getKM(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	ekm.Attackers = &attackers
 	enrichKM(&ekm, mapping)
-	kmshort := getKMPrice(&common.EnrichedKMShort{Victim: ekm.Victim}, priceMap)
-	ekm.Price = kmshort.Price
+	getKMPrice(&ekm, priceMap)
 
 	body, err := json.Marshal(ekm)
 	if err != nil {

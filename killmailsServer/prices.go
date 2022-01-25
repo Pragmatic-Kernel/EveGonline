@@ -92,7 +92,26 @@ func pricesMapToJson(priceMap map[uint]float64) ([]byte, error) {
 	return json.Marshal(priceMap)
 }
 
-func getKMPrice(km *common.EnrichedKMShort, priceMap map[uint]float64) *common.EnrichedKMShort {
+func getKMPrice(km *common.EnrichedKM, priceMap map[uint]float64) *common.EnrichedKM {
+	price := 0.0
+	price += priceMap[km.Victim.ShipTypeID]
+	km.ShipPrice = price
+	items := []common.EnrichedItem{}
+	for _, item := range *km.Victim.EnrichedItems {
+		itemPrice := priceMap[item.ItemTypeID]
+		item.Price = itemPrice
+		priceDropped := itemPrice * float64(item.QuantityDropped)
+		priceDestroyed := itemPrice * float64(item.QuantityDestroyed)
+		price += priceDropped
+		price += priceDestroyed
+		items = append(items, item)
+	}
+	km.Victim.EnrichedItems = &items
+	km.Price = price
+	return km
+}
+
+func getKMPriceShort(km *common.EnrichedKMShort, priceMap map[uint]float64) *common.EnrichedKMShort {
 	price := 0.0
 	price += priceMap[km.Victim.ShipTypeID]
 	for _, item := range *km.Victim.Items {

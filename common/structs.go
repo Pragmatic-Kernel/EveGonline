@@ -143,6 +143,7 @@ type EnrichedKM struct {
 	MoonID       uint                `json:"moon_id"`
 	WarID        uint                `json:"war_id"`
 	Price        float64             `json:"price"`
+	ShipPrice    float64             `json:"ship_price"`
 }
 
 type EnrichedVictim struct {
@@ -174,6 +175,7 @@ type EnrichedItem struct {
 	EnrichedSubItems *[]EnrichedSubItem `json:"items"`
 	ItemName         string             `json:"item_name"`
 	ItemIcon         string             `json:"item_icon"`
+	Price            float64            `json:"price"`
 }
 
 type EnrichedSubItem struct {
@@ -186,4 +188,27 @@ type ItemPrice struct {
 	AdjustedPrice float64 `json:"adjusted_price"`
 	AveragePrice  float64 `json:"average_price"`
 	ItemTypeID    uint    `json:"type_id"`
+}
+
+type ItemAggregated struct {
+	ItemName          string
+	QuantityDropped   uint
+	QuantityDestroyed uint
+	TotalPrice        float64
+}
+
+type EnrichedItems []ItemAggregated
+
+func (it EnrichedItems) Len() int {
+	return len(it)
+}
+
+func (it EnrichedItems) Swap(i, j int) {
+	a := it[i]
+	it[i] = it[j]
+	it[j] = a
+}
+
+func (it EnrichedItems) Less(i, j int) bool {
+	return it[i].TotalPrice < it[j].TotalPrice
 }

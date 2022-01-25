@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 
 	"github.com/Pragmatic-Kernel/EveGonline/common"
 	"github.com/charmbracelet/bubbles/list"
@@ -117,7 +118,7 @@ func getKillmail(kmID string) (*common.EnrichedKM, error) {
 
 func formatKillmailShort(km *common.EnrichedKMShort) string {
 	res := ""
-	kmDate := km.KillmailTime.Format("02/01/2006")
+	kmDate := km.KillmailTime.Format("02/01/2006 15:04:05")
 	loss := getKillmailStatus(km)
 	if loss {
 		res = fmt.Sprintf("\033[31m %15s %4.1f %25s %50s %25s %15s %15s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, common.FormatPrice(km.Price), kmDate)
@@ -144,9 +145,13 @@ func formatKillmail(km *common.EnrichedKM) (string, error) {
 	res += "\n"
 	res += "\033[1m\033[4mItems:\033[22m\033[24m\n"
 	res += "\n"
-	enrichedItems := filterItems(km.Victim.EnrichedItems)
-	for name, value := range enrichedItems {
-		res += fmt.Sprintf("%-50s \033[1m\033[32m%-10d\033[22m\033[39m \033[1m\033[31m%-10d\033[22m\033[39m\n", name, value["dropped"], value["destroyed"])
+	res += fmt.Sprintf("\033[1mShip Value: %s\033[22m\n", common.FormatPrice(km.ShipPrice))
+	res += "\n"
+	enrichedItems := common.EnrichedItems(filterItems(km.Victim.EnrichedItems))
+	sort.Sort(sort.Reverse(enrichedItems))
+
+	for _, item := range enrichedItems {
+		res += fmt.Sprintf("%-50s \033[1m\033[32m%-10d\033[22m\033[39m \033[1m\033[31m%-10d\033[22m\033[39m \033[1m%-10s\033[22m\n", item.ItemName, item.QuantityDropped, item.QuantityDestroyed, common.FormatPrice(item.TotalPrice))
 	}
 	return res, nil
 }
@@ -161,26 +166,32 @@ func filterAttackers(attackers *[]common.EnrichedAttacker) *common.EnrichedAttac
 	return &attackers_[0]
 }
 
-func filterItems(items *[]common.EnrichedItem) map[string]map[string]uint {
-	enrichedItems := make(map[string]map[string]uint)
+func filterItems(items *[]common.EnrichedItem) []common.ItemAggregated {
+	enrichedItems := make(map[string]common.ItemAggregated)
 	for _, item := range *items {
 		if item_, ok := enrichedItems[item.ItemName]; ok {
 			if item.QuantityDropped != 0 {
-				item_["dropped"] += item.QuantityDropped
+				item_.QuantityDropped += item.QuantityDropped
+				item_.TotalPrice += item.Price * float64(item.QuantityDropped)
+				enrichedItems[item.ItemName] = item_
 			} else {
-				item_["destroyed"] += item.QuantityDestroyed
+				item_.QuantityDestroyed += item.QuantityDestroyed
+				item_.TotalPrice += item.Price * float64(item.QuantityDestroyed)
+				enrichedItems[item.ItemName] = item_
 			}
 		} else {
 			if item.QuantityDropped != 0 {
-				enrichedItems[item.ItemName] = make(map[string]uint)
-				enrichedItems[item.ItemName]["dropped"] = item.QuantityDropped
+				enrichedItems[item.ItemName] = common.ItemAggregated{ItemName: item.ItemName, QuantityDropped: item.QuantityDropped, TotalPrice: item.Price * float64(item.QuantityDropped)}
 			} else {
-				enrichedItems[item.ItemName] = make(map[string]uint)
-				enrichedItems[item.ItemName]["destroyed"] = item.QuantityDestroyed
+				enrichedItems[item.ItemName] = common.ItemAggregated{ItemName: item.ItemName, QuantityDestroyed: item.QuantityDestroyed, TotalPrice: item.Price * float64(item.QuantityDestroyed)}
 			}
 		}
 	}
-	return enrichedItems
+	res := []common.ItemAggregated{}
+	for _, item := range enrichedItems {
+		res = append(res, item)
+	}
+	return res
 }
 
 func getKillmailStatus(km *common.EnrichedKMShort) bool {
