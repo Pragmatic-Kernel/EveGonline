@@ -122,6 +122,9 @@ func formatKillmailShort(km *common.EnrichedKMShort) string {
 	if km.Victim.CharacterID == 0 {
 		km.Victim.CharacterName = km.Victim.CorporationName
 	}
+	if km.Attacker.CharacterID == 0 {
+		km.Attacker.CharacterName = km.Attacker.ShipTypeName
+	}
 	loss := getKillmailStatus(km)
 	if loss {
 		res = fmt.Sprintf("\033[31m %15s %4.1f %25s %50s %25s %15s %15s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, common.FormatPrice(km.Price), kmDate)
@@ -134,6 +137,9 @@ func formatKillmailShort(km *common.EnrichedKMShort) string {
 func formatKillmail(km *common.EnrichedKM) (string, error) {
 	res := ""
 	finalBlow := filterAttackers(km.Attackers)
+	if finalBlow.CharacterID == 0 {
+		finalBlow.CharacterName = finalBlow.ShipTypeName
+	}
 	res += fmt.Sprintf("\033[1m\033[31m%s\033[39m\033[22m lost a \033[1m%s\033[22m in \033[3m%s (%.1f)\033[23m. Final blow: \033[1m\033[32m%s\033[39m\033[22m\033[0m\n", km.Victim.CharacterName, km.Victim.ShipTypeName, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, finalBlow.CharacterName)
 	res += "\n"
 	res += fmt.Sprintf("\033[1m\033[7mKill Value: %s\033[27m\033[22m\n", common.FormatPrice(km.Price))
@@ -142,7 +148,13 @@ func formatKillmail(km *common.EnrichedKM) (string, error) {
 	res += fmt.Sprintf("\033[1m\033[4mAttackers: %d\033[22m\033[24m\n", len(*km.Attackers))
 	res += "\n"
 	for _, attacker := range *km.Attackers {
-		res += fmt.Sprintf("\033[1m%25s\033[22m %50s \033[3m%50s %10d %5.1f%%\033[23m\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName, attacker.DamageDone, getDamagePercent(attacker.DamageDone, km.Victim.DamageTaken))
+		if attacker.CharacterID == 0 {
+			attacker.CharacterName = attacker.ShipTypeName
+		}
+		if attacker.WeaponTypeID == 0 {
+			attacker.WeaponTypeName = attacker.ShipTypeName
+		}
+		res += fmt.Sprintf("\033[1m%50s\033[22m %50s \033[3m%50s %10d %5.1f%%\033[23m\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName, attacker.DamageDone, getDamagePercent(attacker.DamageDone, km.Victim.DamageTaken))
 	}
 	res += "\n"
 	res += "\n"
