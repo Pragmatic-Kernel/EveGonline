@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -16,61 +17,52 @@ import (
 )
 
 var endpoint string
+var debug *bool
 
 const PKID = 260635334
 
 func main() {
+	debug = flag.Bool("d", false, "debug")
+	flag.Parse()
+	fmt.Println(*debug)
 	endpoint = os.Getenv("EVE_KMSERVER_ENDPOINT")
 	if endpoint == "" {
 		fmt.Println("No endpoint, please set EVE_KMSERVER_ENDPOINT")
 		return
 	}
-	if len(os.Args) == 1 {
-		kms, err := getKillmails()
-		if err != nil {
-			panic(err)
-		}
-		items := []list.Item{}
-		for _, km := range *kms {
-			items = append(items, item(km))
-		}
-
+	if *debug {
 		f, _ := os.OpenFile("file.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		defer f.Close()
 		log.SetOutput(f)
+	}
 
-		width, height, err := term.GetSize(0)
-		if err != nil {
-			panic(err)
-		}
+	kms, err := getKillmails()
+	if err != nil {
+		panic(err)
+	}
+	items := []list.Item{}
+	for _, km := range *kms {
+		items = append(items, item(km))
+	}
 
-		l := list.New(items, itemDelegate{}, width, height-5)
-		l.Title = "Pragmatic Kernel Killmails"
-		l.SetShowStatusBar(true)
-		l.SetFilteringEnabled(true)
-		l.Styles.Title = titleStyle
-		l.Styles.PaginationStyle = paginationStyle
-		l.Styles.HelpStyle = helpStyle
+	width, height, err := term.GetSize(0)
+	if err != nil {
+		panic(err)
+	}
 
-		m := model{list: l}
+	l := list.New(items, itemDelegate{}, width, height-5)
+	l.Title = "Pragmatic Kernel Killmails"
+	l.SetShowStatusBar(true)
+	l.SetFilteringEnabled(true)
+	l.Styles.Title = titleStyle
+	l.Styles.PaginationStyle = paginationStyle
+	l.Styles.HelpStyle = helpStyle
 
-		if err := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion()).Start(); err != nil {
-			fmt.Println("Error running program:", err)
-			os.Exit(1)
-		}
-	} else if len(os.Args) == 2 {
-		kmID := os.Args[1]
-		km, err := getKillmail(kmID)
-		if err != nil {
-			fmt.Println("No killmail found with id: ", kmID)
-			return
-		}
-		kmString, err := formatKillmail(km)
-		if err != nil {
-			fmt.Println("Error while formatting killmail: ", err)
-			return
-		}
-		fmt.Println(kmString)
+	m := model{list: l}
+
+	if err := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion()).Start(); err != nil {
+		fmt.Println("Error running program:", err)
+		os.Exit(1)
 	}
 }
 

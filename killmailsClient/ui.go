@@ -134,8 +134,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if err != nil {
 					return m, tea.Quit
 				}
-				log.Println("km:")
-				log.Println(kmString)
+				if *debug {
+					log.Println("km:")
+					log.Println(kmString)
+				}
 				m2 := model2{m.list, kmString, false, viewport.New(m.width, m.height-7), m.width, m.height}
 				m2.viewport.SetContent(kmString)
 				m2.viewport.HighPerformanceRendering = false
