@@ -24,7 +24,6 @@ const PKID = 260635334
 func main() {
 	debug = flag.Bool("d", false, "debug")
 	flag.Parse()
-	fmt.Println(*debug)
 	endpoint = os.Getenv("EVE_KMSERVER_ENDPOINT")
 	if endpoint == "" {
 		fmt.Println("No endpoint, please set EVE_KMSERVER_ENDPOINT")
