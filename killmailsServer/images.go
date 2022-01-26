@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -151,7 +151,7 @@ func getImageFromEsi(url string, etag string) ([]byte, string, error) {
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, etag, errors.New("not found")
 	}
-	body, _ := io.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 	return body, etag, nil
 }
 

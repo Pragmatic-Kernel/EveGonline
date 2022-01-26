@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/Pragmatic-Kernel/EveGonline/common"
@@ -59,7 +59,7 @@ func getPricesFromESI() (*[]common.ItemPrice, error) {
 		return nil, fmt.Errorf("unable to execute GET request for prices: %w", err)
 	}
 	defer resp.Body.Close()
-	payload, err := io.ReadAll(resp.Body)
+	payload, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read GET request body for prices: %w", err)
 	}
