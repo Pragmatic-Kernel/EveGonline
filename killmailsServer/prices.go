@@ -14,7 +14,7 @@ func getPrices() (map[uint]float64, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to get prices from cache file: %w", err)
 	}
-	if prices != nil {
+	if prices != nil && len(*prices) != 0 {
 		pricesMap := getPricesMap(prices)
 		return pricesMap, nil
 	}
@@ -33,6 +33,7 @@ func getPricesFromCache() (*[]common.ItemPrice, error) {
 		if err == common.ErrCacheExpired {
 			fmt.Println("File too old, moving.")
 			common.MoveCacheFile("prices", "market")
+			return nil, nil
 		}
 		return nil, fmt.Errorf("unable to get cache file: %w", err)
 	}

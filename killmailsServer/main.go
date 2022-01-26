@@ -25,7 +25,10 @@ type KMWithMap struct {
 func getKMs(db *gorm.DB, w http.ResponseWriter, _ *http.Request) {
 	EnrichedKMs := []common.EnrichedKMShort{}
 	KMs := []common.Killmail{}
-	priceMap, _ := getPrices()
+	priceMap, err := getPrices()
+	if err != nil {
+		fmt.Println("ERROR getting prices")
+	}
 	db.Preload("Attackers").Preload("Victim.Items.SubItems").Order("killmail_time desc").Find(&KMs)
 	for _, km := range KMs {
 		mapping := getKMMapping(&km)
