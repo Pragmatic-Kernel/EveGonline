@@ -118,9 +118,9 @@ func formatKillmailShort(km *common.EnrichedKMShort) string {
 	}
 	loss := getKillmailStatus(km)
 	if loss {
-		res = fmt.Sprintf("\033[31m %15s %4.1f %25s %50s %25s %15s %15s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, common.FormatPrice(km.Price), kmDate)
+		res = fmt.Sprintf("\033[31m \033[3m%15s %4.1f\033[23m %25s \033[1m%50s\033[22m %25s \033[1m%15s\033[22m \033[3m%25s\033[22m\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, common.FormatPrice(km.Price), kmDate)
 	} else {
-		res = fmt.Sprintf("\033[32m %15s %4.1f %25s %50s %25s %15s %15s\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, common.FormatPrice(km.Price), kmDate)
+		res = fmt.Sprintf("\033[32m \033[3m%15s %4.1f\033[23m %25s \033[1m%50s\033[22m %25s \033[1m%15s\033[22m \033[3m%25s\033[22m\033[0m", km.SolarSystem.Name, km.SolarSystem.SecurityStatus, km.Victim.CharacterName, km.Victim.ShipTypeName, km.Attacker.CharacterName, common.FormatPrice(km.Price), kmDate)
 	}
 	return res
 }
@@ -157,7 +157,7 @@ func formatKillmail(km *common.EnrichedKM) (string, error) {
 	sort.Sort(sort.Reverse(enrichedItems))
 
 	for _, item := range enrichedItems {
-		res += fmt.Sprintf("%-50s \033[1m\033[32m%-10d\033[22m\033[39m \033[1m\033[31m%-10d\033[22m\033[39m \033[1m%-10s\033[22m\n", item.ItemName, item.QuantityDropped, item.QuantityDestroyed, common.FormatPrice(item.TotalPrice))
+		res += fmt.Sprintf("%-60s \033[1m\033[32m%-10d\033[22m\033[39m \033[1m\033[31m%-10d\033[22m\033[39m \033[1m%-10s\033[22m\n", item.ItemName, item.QuantityDropped, item.QuantityDestroyed, common.FormatPrice(item.TotalPrice))
 	}
 	return res, nil
 }
