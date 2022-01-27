@@ -131,9 +131,9 @@ func formatKillmail(km *common.EnrichedKM) (string, error) {
 	if finalBlow.CharacterID == 0 {
 		finalBlow.CharacterName = finalBlow.ShipTypeName
 	}
-	res += fmt.Sprintf("\033[1m\033[31m%s\033[39m\033[22m lost a \033[1m%s\033[22m in \033[3m%s (%.1f)\033[23m. Final blow: \033[1m\033[32m%s\033[39m\033[22m\033[0m\n", km.Victim.CharacterName, km.Victim.ShipTypeName, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, finalBlow.CharacterName)
+	res += fmt.Sprintf("\033[1m\033[31m%s\033[39m\033[22m lost a \033[1m%s\033[22m in \033[3m%s (%.1f)\033[23m. Final blow: \033[1m\033[32m%s\033[39m\033[22m\n", km.Victim.CharacterName, km.Victim.ShipTypeName, km.SolarSystem.Name, km.SolarSystem.SecurityStatus, finalBlow.CharacterName)
 	res += "\n"
-	res += fmt.Sprintf("\033[1m\033[7mKill Value: %s\033[27m\033[22m\n", common.FormatPrice(km.Price))
+	res += fmt.Sprintf("\033[1m\033[33mKill Value: %s\033[39m\033[22m\n", common.FormatPrice(km.Price))
 	res += "\n"
 	res += "\n"
 	res += fmt.Sprintf("\033[1m\033[4mAttackers: %d\033[22m\033[24m\n", len(*km.Attackers))

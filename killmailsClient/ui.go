@@ -19,7 +19,7 @@ const defaultWidth = 20
 var (
 	titleStyle        = lipgloss.NewStyle().MarginLeft(2).Bold(true)
 	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("226"))
+	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(4)
 	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
 	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
@@ -197,7 +197,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	fn := itemStyle.Render
 	if index == m.Index() {
 		fn = func(s string) string {
-			return selectedItemStyle.Render("> " + s)
+			return selectedItemStyle.Render("\033[7m" + s + "\033[0m")
 		}
 	}
 
