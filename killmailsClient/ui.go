@@ -75,7 +75,9 @@ func (m model2) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "b":
 			m := model{list: m.list, width: m.width, height: m.height}
 			return m, nil
-
+		case "esc":
+			m := model{list: m.list, width: m.width, height: m.height}
+			return m, nil
 		case "ctrl+c":
 			m.quitting = true
 			return m, tea.Quit
@@ -121,7 +123,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			m.quitting = true
 			return m, tea.Quit
-
+		case "enter":
+			_, ok := m.list.SelectedItem().(item)
+			if ok {
+				item := m.list.SelectedItem().(item)
+				enrichedKM, err := getKillmail(fmt.Sprint(item.ID))
+				if err != nil {
+					return m, tea.Quit
+				}
+				kmString, err := formatKillmail(enrichedKM)
+				if err != nil {
+					return m, tea.Quit
+				}
+				if *debug {
+					log.Println("km:")
+					log.Println(kmString)
+				}
+				m2 := model2{m.list, kmString, false, viewport.New(m.width, m.height-7), m.width, m.height}
+				m2.viewport.SetContent(kmString)
+				m2.viewport.HighPerformanceRendering = false
+				return m2, nil
+			}
 		case "e":
 			_, ok := m.list.SelectedItem().(item)
 			if ok {

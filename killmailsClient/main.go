@@ -16,19 +16,15 @@ import (
 	"golang.org/x/term"
 )
 
-var endpoint string
+var endpoint *string
 var debug *bool
 
 const PKID = 260635334
 
 func main() {
 	debug = flag.Bool("d", false, "debug")
+	endpoint = flag.String("e", "http://tortuga.judge-gregg.net:8000", "endpoint")
 	flag.Parse()
-	endpoint = os.Getenv("EVE_KMSERVER_ENDPOINT")
-	if endpoint == "" {
-		fmt.Println("No endpoint, please set EVE_KMSERVER_ENDPOINT")
-		return
-	}
 	if *debug {
 		f, _ := os.OpenFile("file.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		defer f.Close()
@@ -66,7 +62,7 @@ func main() {
 }
 
 func getKillmails() (*[]common.EnrichedKMShort, error) {
-	req, err := http.NewRequest("GET", endpoint+"/killmails/", nil)
+	req, err := http.NewRequest("GET", *endpoint+"/killmails/", nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating GET request: %w", err)
 	}
@@ -86,7 +82,7 @@ func getKillmails() (*[]common.EnrichedKMShort, error) {
 }
 
 func getKillmail(kmID string) (*common.EnrichedKM, error) {
-	req, err := http.NewRequest("GET", endpoint+"/killmail/"+kmID, nil)
+	req, err := http.NewRequest("GET", *endpoint+"/killmail/"+kmID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating GET request: %w", err)
 	}
