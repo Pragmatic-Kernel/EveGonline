@@ -141,6 +141,9 @@ func formatKillmail(km *common.EnrichedKM) (string, error) {
 		if attacker.WeaponTypeID == 0 {
 			attacker.WeaponTypeName = attacker.ShipTypeName
 		}
+		if attacker.ShipTypeID == 0 {
+			attacker.ShipTypeName = "?"
+		}
 		res += fmt.Sprintf("\033[1m%50s\033[22m %50s \033[3m%50s %10d %5.1f%%\033[23m\n", attacker.CharacterName, attacker.ShipTypeName, attacker.WeaponTypeName, attacker.DamageDone, getDamagePercent(attacker.DamageDone, km.Victim.DamageTaken))
 	}
 	res += "\n"
