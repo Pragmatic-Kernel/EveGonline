@@ -110,7 +110,7 @@ func getKillmailIDsWithToken(db *gorm.DB, token common.Token) ([]common.Killmail
 		url = fmt.Sprintf(common.EveApiKillmailCorpAPIUrl, token.CorpID)
 		fmt.Println(url)
 	} else {
-		url := fmt.Sprintf(common.EveApiKillmailCharAPIUrl, token.CharID)
+		url = fmt.Sprintf(common.EveApiKillmailCharAPIUrl, token.CharID)
 		fmt.Println(url)
 	}
 	body, err := common.GetCache(url, "recent", 86400)
