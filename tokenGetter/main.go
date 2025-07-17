@@ -60,7 +60,7 @@ func main() {
 		w.WriteHeader(301)
 		w.Write([]byte{})
 	})
-	mux.HandleFunc("/callback/", func(_ http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/callback", func(_ http.ResponseWriter, r *http.Request) {
 		codes, ok := r.URL.Query()["code"]
 		if !ok {
 			fmt.Println("ERROR: no code found in URL")
